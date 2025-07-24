@@ -4,7 +4,7 @@ import {
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from './assets/logo.png';
-import axios from 'axios'; // ⬅️ เพิ่มตรงนี้
+// import axios from 'axios'; // ไม่จำเป็นต้องใช้ axios ถ้าใช้ fetch
 
 const ratingOptions = [
   { value: 1, label: 'น้อยมาก', icon: <FaSadTear size={32} className="text-red-500" /> },
@@ -19,31 +19,47 @@ const FeedbackForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // URL ของ Apps Script Web App ที่ Deploy แล้ว (ตรวจสอบให้แน่ใจว่าเป็น URL ล่าสุด)
+  const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyvXqt4sahUzCvMIdQvCWkCQY6Z3RL1ntmAmu8I1x9nksIzCF6j-A95fvjgId8mQuIg/exec';
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (rating !== null) {
       const selected = ratingOptions.find(r => r.value === rating);
       setLoading(true);
       try {
-        // ใช้ fetch แทน axios เพื่อหลีกเลี่ยง CORS
         const formData = new FormData();
         formData.append('rating', rating);
         formData.append('label', selected.label);
 
         const response = await fetch(
-          'https://script.google.com/macros/s/AKfycbyhdMEiKMxZyqdwqZRCaiie0nUCstvsMEPAF-haCJf6hqb0pAakaDc_htofmlT0Ekza/exec',
+          WEB_APP_URL, // ใช้ URL ของ Apps Script Web App
           {
             method: 'POST',
             body: formData,
-            mode: 'no-cors' // หลีกเลี่ยง CORS
+            // ❌ ลบ mode: 'no-cors' ออก เพื่อให้ CORS ทำงานได้ถูกต้อง
+            // ไม่ต้องใส่ headers: { 'Content-Type': 'multipart/form-data' } ด้วย
+            // เพราะ fetch จะจัดการให้เองเมื่อใช้ FormData
           }
         );
+
+        // ✅ ตรวจสอบ response ว่าสำเร็จหรือไม่
+        // เนื่องจาก Apps Script Web App ส่ง { result: 'success' } กลับมา
+        // ถ้า response.ok ไม่ได้แปลว่าสำเร็จเสมอไปเมื่อไม่มี CORS
+        // เราควรตรวจสอบเนื้อหาของ response โดยตรง
+        const result = await response.json(); // แปลง response เป็น JSON
+        if (result && result.result === 'success') {
+          console.log("✅ ส่งสำเร็จ");
+          setSubmitted(true);
+        } else {
+          console.error("❌ ส่งข้อมูลไม่สำเร็จ (Response ไม่ใช่ success)", result);
+          alert("เกิดข้อผิดพลาดในการส่งข้อมูล: " + (result.message || "ไม่ทราบสาเหตุ"));
+        }
         
-        console.log("✅ ส่งสำเร็จ");
-        setSubmitted(true);
       } catch (error) {
-        console.error("❌ ส่งข้อมูลไม่สำเร็จ", error);
-        alert("เกิดข้อผิดพลาดในการส่งข้อมูล");
+        console.error("❌ ส่งข้อมูลไม่สำเร็จ (Network Error หรืออื่นๆ)", error);
+        alert("เกิดข้อผิดพลาดในการส่งข้อมูล: โปรดลองอีกครั้ง");
       } finally {
         setLoading(false);
       }
