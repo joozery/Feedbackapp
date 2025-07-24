@@ -24,7 +24,7 @@ const FeedbackForm = () => {
       const selected = ratingOptions.find(r => r.value === rating);
       setLoading(true);
       try {
-        await fetch('https://script.google.com/macros/library/d/1NR16J1VtlyF3xYhT-bwsijTRy-AjyYk0iz2rngWLe8nBBXmnyBhIWIZT/1', {
+        await fetch('https://script.google.com/macros/s/AKfycbwg1ty7AUB2MEQJiPfuyhLd5kOWW_piZcAu5woeO8g61cXStXwdWO0wUBjv_yTaJRXeQQ/exec', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
