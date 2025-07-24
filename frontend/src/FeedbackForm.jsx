@@ -25,19 +25,21 @@ const FeedbackForm = () => {
       const selected = ratingOptions.find(r => r.value === rating);
       setLoading(true);
       try {
-        const response = await axios.post(
+        // ใช้ fetch แทน axios เพื่อหลีกเลี่ยง CORS
+        const formData = new FormData();
+        formData.append('rating', rating);
+        formData.append('label', selected.label);
+
+        const response = await fetch(
           'https://script.google.com/macros/s/AKfycbyhdMEiKMxZyqdwqZRCaiie0nUCstvsMEPAF-haCJf6hqb0pAakaDc_htofmlT0Ekza/exec',
           {
-            rating: rating,
-            label: selected.label,
-          },
-          {
-            headers: {
-              'Content-Type': 'application/json',
-            },
+            method: 'POST',
+            body: formData,
+            mode: 'no-cors' // หลีกเลี่ยง CORS
           }
         );
-        console.log("✅ ส่งสำเร็จ", response.data);
+        
+        console.log("✅ ส่งสำเร็จ");
         setSubmitted(true);
       } catch (error) {
         console.error("❌ ส่งข้อมูลไม่สำเร็จ", error);
