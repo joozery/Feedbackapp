@@ -4,6 +4,7 @@ import {
 } from 'react-icons/fa';
 import { motion, AnimatePresence } from 'framer-motion';
 import logo from './assets/logo.png';
+import axios from 'axios'; // ⬅️ เพิ่มตรงนี้
 
 const ratingOptions = [
   { value: 1, label: 'น้อยมาก', icon: <FaSadTear size={32} className="text-red-500" /> },
@@ -18,31 +19,35 @@ const FeedbackForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
+  cconst handleSubmit = async (e) => {
     e.preventDefault();
     if (rating !== null) {
       const selected = ratingOptions.find(r => r.value === rating);
       setLoading(true);
       try {
-        await fetch('https://script.google.com/macros/s/AKfycbyhdMEiKMxZyqdwqZRCaiie0nUCstvsMEPAF-haCJf6hqb0pAakaDc_htofmlT0Ekza/exec', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
+        const response = await axios.post(
+          'https://script.google.com/macros/s/AKfycbyhdMEiKMxZyqdwqZRCaiie0nUCstvsMEPAF-haCJf6hqb0pAakaDc_htofmlT0Ekza/exec',
+          {
             rating: rating,
             label: selected.label,
-          }),
-        });
+          },
+          {
+            headers: {
+              'Content-Type': 'application/json',
+            },
+          }
+        );
+        console.log("✅ ส่งสำเร็จ", response.data);
         setSubmitted(true);
       } catch (error) {
-        console.error("ส่งข้อมูลไม่สำเร็จ", error);
+        console.error("❌ ส่งข้อมูลไม่สำเร็จ", error);
         alert("เกิดข้อผิดพลาดในการส่งข้อมูล");
       } finally {
         setLoading(false);
       }
     }
   };
+  
 
   const renderStars = (count) => {
     return [...Array(count)].map((_, idx) => (
