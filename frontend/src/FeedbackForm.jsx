@@ -19,7 +19,7 @@ const FeedbackForm = () => {
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  cconst handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (rating !== null) {
       const selected = ratingOptions.find(r => r.value === rating);
