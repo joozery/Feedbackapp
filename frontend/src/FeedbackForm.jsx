@@ -14,7 +14,7 @@ const ratingOptions = [
   { value: 5, label: 'มากที่สุด', icon: <FaGrinStars size={32} className="text-emerald-500" /> },
 ];
 
-const FeedbackForm = () => {
+const FeedbackForm = ({ onBack }) => {
   const [rating, setRating] = useState(null);
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -32,9 +32,10 @@ const FeedbackForm = () => {
         const formData = new FormData();
         formData.append('rating', rating);
         formData.append('label', selected.label);
+        formData.append('type', 'feedback'); // เพิ่ม type เพื่อแยกประเภท
 
         const response = await fetch(
-          WEB_APP_URL, // ใช้ URL ของ Apps Script Web App
+          'https://script.google.com/macros/s/AKfycbz7iiLDZ4i1XALYUTXpRTCH74XgvF8oVjqXqmukWBcdZRSEZwelA0DztwhTlBtWsSm5/exec',
           {
             method: 'POST',
             body: formData,
@@ -86,7 +87,15 @@ const FeedbackForm = () => {
         transition={{ duration: 0.6, ease: 'easeOut' }}
       >
         {/* ✅ LOGO */}
-        <div className="flex justify-center mb-6">
+        <div className="flex justify-center mb-6 relative">
+          {onBack && (
+            <button
+              onClick={onBack}
+              className="absolute left-0 top-1/2 transform -translate-y-1/2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-semibold transition-colors"
+            >
+              ← กลับ
+            </button>
+          )}
           <img src={logo} alt="SACIT Logo" className="h-20 sm:h-24 object-contain" />
         </div>
 
