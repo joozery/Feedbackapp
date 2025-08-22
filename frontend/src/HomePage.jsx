@@ -170,6 +170,18 @@ const HomePage = () => {
           </motion.div>
         </div>
 
+        {/* Dashboard Button */}
+        <div className="mt-8 text-center">
+          <motion.button
+            onClick={() => navigate('/dashboard')}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 rounded-xl font-semibold text-lg transition-all duration-300 shadow-lg hover:shadow-xl"
+            whileHover={{ scale: 1.05, y: -2 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            📊 ดูรายงานสรุป (Dashboard)
+          </motion.button>
+        </div>
+
         <div className="mt-8 text-center text-gray-600 text-sm">
           <p>© 2025 SACIT Symposium. All rights reserved.</p>
         </div>

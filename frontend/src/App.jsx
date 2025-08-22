@@ -7,6 +7,7 @@ import SubRoomForm from './SubRoomForm';
 import ExhibitionForm from './ExhibitionForm';
 import WorkshopSatisfactionForm from './WorkshopSatisfactionForm';
 import AboutSACITForm from './AboutSACITForm';
+import Dashboard from './Dashboard';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/exhibition" element={<ExhibitionForm />} />
           <Route path="/workshop-satisfaction" element={<WorkshopSatisfactionForm />} />
           <Route path="/about-sacit" element={<AboutSACITForm />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
