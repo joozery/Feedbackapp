@@ -94,6 +94,14 @@ const Dashboard = () => {
   // Debug: ตรวจสอบ API Key
   console.log('API Key:', API_KEY);
   console.log('Environment Variables:', import.meta.env);
+  
+  // ตรวจสอบว่า API Key มีค่าหรือไม่
+  if (!API_KEY) {
+    console.error('❌ VITE_GOOGLE_SHEETS_API_KEY ไม่ถูกตั้งค่า!');
+    console.error('กรุณาตั้งค่า Environment Variable ใน Netlify Dashboard');
+  } else {
+    console.log('✅ API Key พร้อมใช้งาน');
+  }
   const SPREADSHEETS = {
     feedback: '11CWBhfxQwoT87-G4HOSV0u7WWm7cLcH2sBmve6GwTPY',
     participation: '1my54_beZk3Blcb-IbhofkV8zmR0PliQjYLGIfv9YbNw',
@@ -105,13 +113,31 @@ const Dashboard = () => {
 
   const fetchSheetData = async (spreadsheetId, sheetName) => {
     try {
-      const response = await fetch(
-        `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}?key=${API_KEY}`
-      );
+      if (!API_KEY) {
+        console.error(`❌ ไม่สามารถดึงข้อมูล ${sheetName} ได้ - ไม่มี API Key`);
+        return [];
+      }
+      
+      const url = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${sheetName}?key=${API_KEY}`;
+      console.log(`🔍 กำลังดึงข้อมูล ${sheetName}:`, url);
+      
+      const response = await fetch(url);
       const result = await response.json();
-      return result.values || [];
+      
+      if (response.ok) {
+        console.log(`✅ ${sheetName} - ได้ข้อมูล ${result.values ? result.values.length : 0} แถว`);
+        return result.values || [];
+      } else {
+        console.error(`❌ ${sheetName} - Error ${response.status}:`, result);
+        if (response.status === 403) {
+          console.error('⚠️  ตรวจสอบ Google Sheets Sharing Settings');
+        } else if (response.status === 400) {
+          console.error('⚠️  ตรวจสอบ Spreadsheet ID หรือ Sheet Name');
+        }
+        return [];
+      }
     } catch (error) {
-      console.error(`Error fetching ${sheetName}:`, error);
+      console.error(`❌ Network Error ${sheetName}:`, error);
       return [];
     }
   };
@@ -119,6 +145,16 @@ const Dashboard = () => {
   const fetchAllData = async () => {
     try {
       setLoading(true);
+      
+      // ตรวจสอบ API Key ก่อน
+      if (!API_KEY) {
+        console.error('❌ ไม่มี API Key - ใช้ข้อมูล Mock แทน');
+        setData(mockData);
+        setLoading(false);
+        return;
+      }
+      
+      console.log('🚀 เริ่มดึงข้อมูลจาก Google Sheets...');
       
       // ดึงข้อมูลจากทุก Sheet (ใช้ชื่อ Sheet ที่แท้จริง)
       const feedbackData = await fetchSheetData(SPREADSHEETS.feedback, 'Sheet1'); // หรือชื่อ Sheet ที่แท้จริง
@@ -582,6 +618,28 @@ const Dashboard = () => {
           <p className="text-lg text-indigo-700 mb-6 text-center">
             รายงานสรุปผลการประเมินความพึงพอใจ
           </p>
+          
+          {/* แสดงข้อความแจ้งเตือนเมื่อไม่มี API Key */}
+          {!API_KEY && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-sm font-medium text-yellow-800">
+                    ⚠️ ข้อมูลแสดงจาก Mock Data
+                  </h3>
+                  <div className="mt-2 text-sm text-yellow-700">
+                    <p>กรุณาตั้งค่า Environment Variable <code className="bg-yellow-100 px-1 rounded">VITE_GOOGLE_SHEETS_API_KEY</code> ใน Netlify Dashboard</p>
+                    <p className="mt-1">ดูรายละเอียดใน <code className="bg-yellow-100 px-1 rounded">NETLIFY_DEPLOYMENT.md</code></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Navigation Tabs */}
           <div className="flex flex-wrap gap-2 mb-6 justify-center">
